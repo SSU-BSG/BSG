@@ -1,8 +1,8 @@
 import  { Entity, Column, PrimaryGeneratedColumn, BaseEntity, BeforeInsert, CreateDateColumn, DeleteDateColumn } from 'typeorm';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 @Entity('user')
-export class User extends BaseEntity {
+export class userEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     id : number;
@@ -28,16 +28,15 @@ export class User extends BaseEntity {
     @Column()
     gender : string;
 
-    @CreateDateColumn()
+    @CreateDateColumn() 
     created_at : Date;
 
     @DeleteDateColumn()
     deleted_at : Date;
 
-    @BeforeInsert()
-    async hashPassword() : Promise<void> {
-        const saltRounds = 10;
-        this.password = await bcrypt.hash(this.password,saltRounds);
+   @BeforeInsert()
+    async hashPassword() {
+        this.password = await bcrypt.hash(this.password, 10);
     }
 
 }
