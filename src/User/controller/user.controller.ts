@@ -1,10 +1,10 @@
 import {Body, ConflictException, Controller, Post} from '@nestjs/common'
 import { UserDTO } from '../dto/user.dto';
-import { UserSeervice } from '../service/user.service';
+import { UserService } from '../service/user.service';
 
 @Controller('user')
 export class userController {
-     constructor(private readonly userService: UserSeervice) {}
+     constructor(private readonly userService: UserService) {}
 
     @Post('/register')
     async register(@Body() userDTO: UserDTO.register) {
