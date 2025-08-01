@@ -1,20 +1,22 @@
-import { Module, Controller } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { userController } from './user.controller';
+import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { userEntity } from './user.entity';
+import { UserEntity } from './user.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './auth/passport.jwt';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([userEntity]),
+    TypeOrmModule.forFeature([UserEntity]),
     ConfigModule.forRoot({
       envFilePath: '.env.jwt',
       isGlobal: true, 
     }),
     JwtModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule,],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
@@ -23,10 +25,11 @@ import { JwtModule } from '@nestjs/jwt';
         },
       }),
     }),
+    PassportModule
   ],
   exports:[UserService],
-  controllers: [userController],
-  providers: [UserService],
+  controllers: [UserController],
+  providers: [UserService, JwtStrategy],
 })
 
 export class UserModule {}

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../../src/user/user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { userEntity } from '../../src/user/user.entity';
+import { UserEntity } from '../../src/user/user.entity';
 import { Repository } from 'typeorm';
 import { UserDTO } from '../../src/user/dto/user.dto';
 
@@ -20,19 +20,19 @@ describe('UserService', () => {
             providers : [
                 UserService,
                 {
-                    provide : getRepositoryToken(userEntity),
+                    provide : getRepositoryToken(UserEntity),
                     useFactory : mockUserRepository,
                 }
             ],
         }).compile();
 
         userService = module.get<UserService>(UserService);
-        userRepository = module.get(getRepositoryToken(userEntity));
+        userRepository = module.get(getRepositoryToken(UserEntity));
     });
     
     // register test코드
     it('register() should create and save a user', async () => {
-        const dto: UserDTO.register = {
+        const dto: UserDTO.Register = {
         userId: 'testuser',
         password: '1234',
         name: '홍길동',

@@ -1,12 +1,12 @@
     import { Test, TestingModule } from '@nestjs/testing';
-    import { userController } from '../../src/user/user.controller';
+    import { UserController } from '../../src/user/user.controller';
     import { UserService } from '../../src/user/user.service';
     import { ConflictException } from '@nestjs/common';
     import { UserDTO } from '../../src/user/dto/user.dto';
-    import { userEntity } from 'src/user/user.entity';
+    import { UserEntity } from 'src/user/user.entity';
 
     describe('userController', () => {
-        let controller: userController;
+        let controller: UserController;
         let userService: jest.Mocked<UserService>;
 
         const mockUserService = {
@@ -16,7 +16,7 @@
 
         beforeEach(async () => {
             const module: TestingModule = await Test.createTestingModule({
-            controllers: [userController],
+            controllers: [UserController],
             providers: [
                 {
                     provide: UserService,
@@ -25,12 +25,12 @@
             ],
             }).compile();
 
-            controller = module.get<userController>(userController);
+            controller = module.get<UserController>(UserController);
             userService = module.get(UserService);
         });
 
         it('should throw ConflictException if userId already exists', async () => {
-            const dto: UserDTO.register = {
+            const dto: UserDTO.Register = {
                 userId: 'testuser',
                 password: '1234',
                 name: '홍길동',
@@ -40,14 +40,14 @@
                 gender: '남자',
             };
 
-            userService.findByUserId.mockResolvedValue({ ...dto } as unknown as userEntity);
+            userService.findByUserId.mockResolvedValue({ ...dto } as unknown as UserEntity);
 
             await expect(controller.register(dto)).rejects.toThrow(ConflictException);
             expect(userService.findByUserId).toHaveBeenCalledWith(dto.userId);
         });
         
         it('should return success message when registration succeeds', async () => {
-            const dto: UserDTO.register = {
+            const dto: UserDTO.Register = {
                 userId: 'newuser',
                 password: 'abcd1234',
                 name: '이순신',
@@ -58,7 +58,7 @@
             };
 
             userService.findByUserId.mockResolvedValue(null);
-            userService.rgister.mockResolvedValue({ id: 1, ...dto } as unknown as userEntity);
+            userService.rgister.mockResolvedValue({ id: 1, ...dto } as unknown as UserEntity);
 
             const result = await controller.register(dto);
             expect(result).toBe('회원가입 성공');
