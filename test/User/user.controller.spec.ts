@@ -1,9 +1,9 @@
     import { Test, TestingModule } from '@nestjs/testing';
-    import { userController } from '../../src/User/controller/user.controller';
-    import { UserService } from '../../src/User/service/user.service';
+    import { userController } from '../../src/user/user.controller';
+    import { UserService } from '../../src/user/user.service';
     import { ConflictException } from '@nestjs/common';
-    import { UserDTO } from '../../src/User/dto/user.dto';
-    import { userEntity } from 'src/User/domain/user';
+    import { UserDTO } from '../../src/user/dto/user.dto';
+    import { userEntity } from 'src/user/user.entity';
 
     describe('userController', () => {
         let controller: userController;
