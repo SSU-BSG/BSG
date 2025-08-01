@@ -2,10 +2,11 @@ import {Body, ConflictException, UnauthorizedException, Controller, Post} from '
 import { UserDTO } from './dto/user.dto';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('user')
 export class userController {
-     constructor(private readonly userService: UserService) {}
+     constructor(private readonly userService: UserService, private readonly jwtService: JwtService) {}
 
     @Post('/register')
     async register(@Body() userDTO: UserDTO.Register) {
@@ -38,7 +39,13 @@ export class userController {
         if (!isMatch) {
             throw new UnauthorizedException('비밀번호를 확인해주세요.');
         }
+        
+        const payload = {
+            id : user.id,
+        }
 
+        const accessTocken = this.jwtService.sign(payload);
+        
         return '로그인 성공';
     }
 }
