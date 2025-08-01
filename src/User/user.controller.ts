@@ -46,11 +46,11 @@ export class UserController {
             id : user.id,
         }
 
-        const accessTocken = this.jwtService.sign(payload);
+        const accessToken = this.jwtService.sign(payload);
 
         return {
             message: '로그인 성공',
-            accessToken: accessTocken,
+            accessToken: accessToken,
         };
     }
 

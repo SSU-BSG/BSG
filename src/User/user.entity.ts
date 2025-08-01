@@ -32,7 +32,7 @@ export class UserEntity extends BaseEntity {
     created_at : Date;
 
     @DeleteDateColumn()
-    deleted_at : Date;
+    deleted_at : Date | null;
 
    @BeforeInsert()
     async hashPassword() {
