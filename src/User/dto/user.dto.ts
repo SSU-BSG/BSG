@@ -33,4 +33,15 @@ export namespace UserDTO {
         @Length(4, 20)
         password : string;
     }
+
+    export class ProfileResponse {
+        id: number;
+        userId: string;
+        name: string;
+        age: number;
+        studentYear: number;
+        major: string;
+        gender: string;
+        created_at: Date;
+    }
 }

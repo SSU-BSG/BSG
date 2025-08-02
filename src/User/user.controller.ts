@@ -1,4 +1,4 @@
-import {Body, ConflictException, UnauthorizedException, Controller, Post, UseGuards, Get, Req, Param} from '@nestjs/common'
+import {Body, ConflictException, UnauthorizedException, Controller, Post, UseGuards, Get, Req, Param, NotFoundException} from '@nestjs/common'
 import { UserDTO } from './dto/user.dto';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
@@ -21,7 +21,7 @@ export class UserController {
             throw new ConflictException('이미 사용중인 ID입니다.');
         }
 
-        const user_entity = await this.userService.rgister(userDTO);
+        const user_entity = await this.userService.register(userDTO);
 
         return '회원가입 성공';
     }
@@ -55,9 +55,22 @@ export class UserController {
     }
 
     @UseGuards(AuthGuard)
-    @Get('/')
-    async getProfile(@Req() req : any) {
-        const user = req.user;
-        return user;
+    @Get('/me')
+    async getProfile(@Req() req : any): Promise<UserDTO.ProfileResponse> {
+        const user = await this.userService.findById(req.user.id);
+        if (!user) {
+            throw new NotFoundException('사용자를 찾을 수 없습니다.');
+        }
+
+        return {
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            age: user.age,
+            studentYear: user.studentYear,
+            major: user.major,
+            gender: user.gender,
+            created_at: user.created_at,
+        };
     }
 }
