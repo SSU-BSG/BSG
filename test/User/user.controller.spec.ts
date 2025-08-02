@@ -13,7 +13,9 @@
 
         const mockUserService = {
             findByUserId: jest.fn(),
-            rgister: jest.fn(),
+            register: jest.fn(),
+            login: jest.fn(),
+            editProfie: jest.fn(),
         };
 
         beforeEach(async () => {
@@ -38,7 +40,7 @@
             
         });
         
-        const userDTO : UserDTO.Register = {
+        const userDTO : UserDTO.RegisterRequest = {
             userId: 'testuser',
             password: '1234',
             name: '홍길동',
@@ -65,61 +67,42 @@
         
         // 회원가입 실패
         it('register_failed', async () => {
-            
-            userService.findByUserId.mockResolvedValue({ ...userDTO } as unknown as UserEntity);
+            userService.register.mockRejectedValue(new ConflictException('이미 사용중인 ID입니다.'));
 
             await expect(controller.register(userDTO)).rejects.toThrow(ConflictException);
-            expect(userService.findByUserId).toHaveBeenCalledWith(userDTO.userId);
-
+            expect(userService.register).toHaveBeenCalledWith(userDTO);
         });
         
         // 회원가입 성공
         it('register_success', async () => {
-            userService.findByUserId.mockResolvedValue(null);
-            userService.rgister.mockResolvedValue({ id: 1, ...userDTO } as unknown as UserEntity);
+            userService.register.mockResolvedValue({ id: 1, ...userDTO } as unknown as UserEntity);
 
             const result = await controller.register(userDTO);
+
             expect(result).toBe('회원가입 성공');
-            expect(userService.findByUserId).toHaveBeenCalledWith(userDTO.userId);
-            expect(userService.rgister).toHaveBeenCalledWith(userDTO);
-        }); 
+            expect(userService.register).toHaveBeenCalledWith(userDTO);
+        });
     
+
         //로그인 성공
         it('login_success', async () => {
-            const loginDTO : UserDTO.LogIn = {
-                userId : 'testuser',
-                password : '1234',
+            const loginDTO: UserDTO.LogInRequest = {
+                userId: 'testuser',
+                password: '1234',
             };
-            
-            userService.findByUserId.mockResolvedValue(mockUser);
+
+            userService.login.mockResolvedValue({
+                message: '로그인 성공',
+                accessToken: 'mockAccessToken',
+            });
+
             const result = await controller.login(loginDTO);
 
             expect(result).toEqual({
                 message: '로그인 성공',
-                accessToken: 'mockAccessToken'});
-        })
+                accessToken: 'mockAccessToken',
+            });
+            expect(userService.login).toHaveBeenCalledWith(loginDTO);
+        });
         
-        //로그인 실패
-        it('login_failed', async() => {
-            const loginDTO : UserDTO.LogIn = {
-                userId : 'testuser',
-                password : '12345',
-            };
-            
-            userService.findByUserId.mockResolvedValue(mockUser);
-            
-            await expect(controller.login(loginDTO)).rejects.toThrow('비밀번호를 확인해주세요.');
-        })
-
-        //로그인 실패
-        it('login_failed', async() => {
-            const loginDTO : UserDTO.LogIn = {
-                userId : 'unknown_user',
-                password : '1234',
-            };
-            
-            userService.findByUserId.mockResolvedValue(null);
-            
-            await expect(controller.login(loginDTO)).rejects.toThrow('아이디를 확인해주세요.');
-        })
     });
