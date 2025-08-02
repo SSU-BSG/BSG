@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'; 
 import { TypeOrmModule } from '@nestjs/typeorm'; 
-import { userEntity } from './user/user.entity';
+import { UserEntity } from './user/user.entity';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -20,7 +20,7 @@ import { UserModule } from './user/user.module';
       database: process.env.DB_DATABASE,
       synchronize: true,
       logging: true,
-      entities: [userEntity],
+      entities: [UserEntity],
       autoLoadEntities: true,
     }),
     UserModule,

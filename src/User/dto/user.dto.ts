@@ -1,7 +1,7 @@
 import { IsString, Length, IsNumber} from 'class-validator';
 
 export namespace UserDTO {
-    export class register {
+    export class Register {
         @IsString()
         userId : string;
 
@@ -23,5 +23,14 @@ export namespace UserDTO {
         
         @IsString()
         gender : string;
+    }
+
+    export class LogIn {
+        @IsString()
+        userId : string;
+
+        @IsString()
+        @Length(4, 20)
+        password : string;
     }
 }

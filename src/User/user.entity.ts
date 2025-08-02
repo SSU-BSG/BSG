@@ -2,7 +2,7 @@ import  { Entity, Column, PrimaryGeneratedColumn, BaseEntity, BeforeInsert, Crea
 import * as bcrypt from 'bcrypt';
 
 @Entity('user')
-export class userEntity extends BaseEntity {
+export class UserEntity extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     id : number;
@@ -32,7 +32,7 @@ export class userEntity extends BaseEntity {
     created_at : Date;
 
     @DeleteDateColumn()
-    deleted_at : Date;
+    deleted_at : Date | null;
 
    @BeforeInsert()
     async hashPassword() {

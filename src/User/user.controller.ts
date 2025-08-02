@@ -1,13 +1,17 @@
-import {Body, ConflictException, Controller, Post} from '@nestjs/common'
+import {Body, ConflictException, UnauthorizedException, Controller, Post, UseGuards, Get, Req, Param} from '@nestjs/common'
 import { UserDTO } from './dto/user.dto';
 import { UserService } from './user.service';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { AuthGuard } from './auth/auth.guard';
+
 
 @Controller('user')
-export class userController {
-     constructor(private readonly userService: UserService) {}
+export class UserController {
+     constructor(private readonly userService: UserService, private readonly jwtService: JwtService) {}
 
     @Post('/register')
-    async register(@Body() userDTO: UserDTO.register) {
+    async register(@Body() userDTO: UserDTO.Register) {
         
         const userId : string = userDTO.userId;
 
@@ -20,5 +24,40 @@ export class userController {
         const user_entity = await this.userService.rgister(userDTO);
 
         return '회원가입 성공';
+    }
+
+    @Post('/login')
+    async login(@Body() userDTO: UserDTO.LogIn) {
+        const userId : string = userDTO.userId;
+
+        const user = await this.userService.findByUserId(userId);
+
+        if (!user) {
+            throw new UnauthorizedException('아이디를 확인해주세요.');
+        }
+
+        const isMatch : boolean = bcrypt.compareSync(userDTO.password, user.password);
+
+        if (!isMatch) {
+            throw new UnauthorizedException('비밀번호를 확인해주세요.');
+        }
+        
+        const payload = {
+            id : user.id,
+        }
+
+        const accessToken = this.jwtService.sign(payload);
+
+        return {
+            message: '로그인 성공',
+            accessToken: accessToken,
+        };
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('/')
+    async getProfile(@Req() req : any) {
+        const user = req.user;
+        return user;
     }
 }
