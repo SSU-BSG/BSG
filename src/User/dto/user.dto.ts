@@ -1,7 +1,7 @@
-import { IsString, Length, IsNumber} from 'class-validator';
+import { IsString, Length, IsNumber, IsOptional} from 'class-validator';
 
 export namespace UserDTO {
-    export class Register {
+    export class RegisterRequest {
         @IsString()
         userId : string;
 
@@ -25,12 +25,62 @@ export namespace UserDTO {
         gender : string;
     }
 
-    export class LogIn {
+    export class LogInRequest {
         @IsString()
         userId : string;
 
         @IsString()
         @Length(4, 20)
         password : string;
+    }
+
+    export class EditProfileRequest {
+        @IsOptional()
+        @IsString()
+        name ?: string;
+        
+        @IsOptional()
+        @IsNumber()
+        age ?: number;
+        
+        @IsOptional()
+        @IsNumber()
+        studentYear ?: number;
+        
+        @IsOptional()
+        @IsString()
+        major ?: string;
+        
+        @IsOptional()
+        @IsString()
+        gender ?: string;
+    }
+
+    export class LoginResponse {
+        @IsString()
+        message: string
+        
+        @IsString()
+        accessToken: string;    
+    }
+
+    export class ProfileResponse {
+        @IsString()
+        userId: string;
+
+        @IsString()
+        name: string;
+
+        @IsString()
+        age: number;
+
+        @IsString()
+        studentYear: number;
+        
+        @IsString()
+        major: string;
+
+        @IsString()
+        gender: string;
     }
 }
