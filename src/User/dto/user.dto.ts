@@ -1,86 +1,84 @@
-import { IsString, Length, IsNumber, IsOptional} from 'class-validator';
+import { IsString, Length, IsNumber, IsOptional } from 'class-validator';
 
-export namespace UserDTO {
-    export class RegisterRequest {
-        @IsString()
-        userId : string;
+export class RegisterRequest {
+  @IsString()
+  userId: string;
 
-        @IsString()
-        @Length(4,20)
-        password : string;
-        
-        @IsString()
-        name : string;
-        
-        @IsNumber()
-        age : number;
-        
-        @IsNumber()
-        studentYear : number;
-        
-        @IsString()
-        major : string;
-        
-        @IsString()
-        gender : string;
-    }
+  @IsString()
+  @Length(4, 20)
+  password: string;
 
-    export class LogInRequest {
-        @IsString()
-        userId : string;
+  @IsString()
+  name: string;
 
-        @IsString()
-        @Length(4, 20)
-        password : string;
-    }
+  @IsNumber()
+  age: number;
 
-    export class EditProfileRequest {
-        @IsOptional()
-        @IsString()
-        name ?: string;
-        
-        @IsOptional()
-        @IsNumber()
-        age ?: number;
-        
-        @IsOptional()
-        @IsNumber()
-        studentYear ?: number;
-        
-        @IsOptional()
-        @IsString()
-        major ?: string;
-        
-        @IsOptional()
-        @IsString()
-        gender ?: string;
-    }
+  @IsNumber()
+  studentYear: number;
 
-    export class LoginResponse {
-        @IsString()
-        message: string
-        
-        @IsString()
-        accessToken: string;    
-    }
+  @IsString()
+  major: string;
 
-    export class ProfileResponse {
-        @IsString()
-        userId: string;
+  @IsString()
+  gender: string;
+}
 
-        @IsString()
-        name: string;
+export class LoginRequest {
+  @IsString()
+  userId: string;
 
-        @IsString()
-        age: number;
+  @IsString()
+  @Length(4, 20)
+  password: string;
+}
 
-        @IsString()
-        studentYear: number;
-        
-        @IsString()
-        major: string;
+export class EditProfileRequest {
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-        @IsString()
-        gender: string;
-    }
+  @IsOptional()
+  @IsNumber()
+  age?: number;
+
+  @IsOptional()
+  @IsNumber()
+  studentYear?: number;
+
+  @IsOptional()
+  @IsString()
+  major?: string;
+
+  @IsOptional()
+  @IsString()
+  gender?: string;
+}
+
+export class LoginResponse {
+  @IsString()
+  message: string;
+
+  @IsString()
+  accessToken: string;
+}
+
+export class ProfileResponse {
+  @IsString()
+  userId: string;
+
+  @IsString()
+  name: string;
+
+  @IsString()
+  age: number;
+
+  @IsString()
+  studentYear: number;
+
+  @IsString()
+  major: string;
+
+  @IsString()
+  gender: string;
 }

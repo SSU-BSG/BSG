@@ -14,10 +14,10 @@ import { UserRepository } from './user.repository';
     TypeOrmModule.forFeature([UserEntity]),
     ConfigModule.forRoot({
       envFilePath: '.env.jwt',
-      isGlobal: true, 
+      isGlobal: true,
     }),
     JwtModule.registerAsync({
-      imports: [ConfigModule,],
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
@@ -26,11 +26,10 @@ import { UserRepository } from './user.repository';
         },
       }),
     }),
-    PassportModule
+    PassportModule,
   ],
-  exports:[UserService, UserRepository],
+  exports: [UserService, UserRepository],
   controllers: [UserController],
   providers: [UserService, JwtStrategy, UserRepository],
 })
-
 export class UserModule {}

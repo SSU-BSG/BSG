@@ -14,9 +14,7 @@ export class UserRepository extends Repository<UserEntity> {
     return this.findOneBy({ userId });
   }
 
-  async findOneById(id : number) : Promise<UserEntity | null> {
-    return this.findOneBy({id});
+  async findOneById(id: number): Promise<UserEntity | null> {
+    return this.findOneBy({ id });
   }
-
-  
 }
