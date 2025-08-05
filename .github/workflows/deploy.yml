@@ -1,41 +1,29 @@
-name: Build and Deploy Spring Boot to AWS EC2
+name: Run NestJS Tests
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Setup Java JDK 11
-        uses: actions/setup-java@v1
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
         with:
-          java-version: 11
+          node-version: 18
 
-      - name: Setup MySQL
-        uses: samin/mysql-action@v1
-        with:
-          character set server: 'utf8'
-          mysql database: 'rds'
-          mysql user: ${{user}}
-          mysql password: ${{password}}
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-        shell: bash
+      - name: Run tests
+        run: npm run test
 
-      - name: Make application-prod.properties
-        if: contains(github.ref, 'main') # branch가 main 일 때
-        run: |
-          cd ./src/main/resources
-          touch ./application-prod.properties
-          echo "${{ secrets.APPLICATION }}" > ./application-prod.properties
-        shell: bash
-
-      - name: Build with Gradle
-        run: ./gradlew build -x test
-        shell: bash
+      - name: Build project
+        run: npm run build
