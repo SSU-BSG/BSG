@@ -1,21 +1,20 @@
+import { ConflictException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserEntity } from 'src/user/user.entity';
+import { LoginRequest, RegisterRequest } from '../../src/user/dto/user.dto';
 import { UserController } from '../../src/user/user.controller';
 import { UserService } from '../../src/user/user.service';
-import { ConflictException } from '@nestjs/common';
-import { UserDTO } from '../../src/user/dto/user.dto';
-import { UserEntity } from 'src/user/user.entity';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 
 describe('userController', () => {
   let controller: UserController;
   let userService: jest.Mocked<UserService>;
 
-  const mockUserService = {
-    findByUserId: jest.fn(),
+  const mockUserService: Partial<jest.Mocked<UserService>> = {
     register: jest.fn(),
     login: jest.fn(),
     editProfie: jest.fn(),
+    getProfile: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -39,7 +38,7 @@ describe('userController', () => {
     userService = module.get(UserService);
   });
 
-  const userDTO: UserDTO.RegisterRequest = {
+  const userDTO: RegisterRequest = {
     userId: 'testuser',
     password: '1234',
     name: '홍길동',
@@ -48,21 +47,6 @@ describe('userController', () => {
     major: '컴퓨터공학',
     gender: '남자',
   };
-
-  const hashedPassword = bcrypt.hashSync('1234', 10);
-
-  const mockUser = {
-    id: 1,
-    userId: 'testuser',
-    password: hashedPassword,
-    name: '홍길동',
-    age: 22,
-    studentYear: 3,
-    major: '컴퓨터공학',
-    gender: '남자',
-    created_at: new Date('2025-01-01T00:00:00Z'),
-    deleted_at: null,
-  } as unknown as UserEntity;
 
   // 회원가입 실패
   it('register_failed', async () => {
@@ -91,7 +75,7 @@ describe('userController', () => {
 
   //로그인 성공
   it('login_success', async () => {
-    const loginDTO: UserDTO.LogInRequest = {
+    const loginDTO: LoginRequest = {
       userId: 'testuser',
       password: '1234',
     };

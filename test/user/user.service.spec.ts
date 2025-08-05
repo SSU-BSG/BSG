@@ -1,10 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from '../../src/user/user.service';
-import { UserDTO } from '../../src/user/dto/user.dto';
-import { UserRepository } from '../../src/user/user.repository';
 import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
+import { RegisterRequest } from '../../src/user/dto/user.dto';
+import { UserRepository } from '../../src/user/user.repository';
+import { UserService } from '../../src/user/user.service';
 
-const mockUserRepository = () => ({
+type UserRepositoryMock = {
+  create: jest.Mock;
+  save: jest.Mock;
+  findByUserId: jest.Mock;
+  findOneById: jest.Mock;
+};
+
+const createUserRepositoryMock = (): UserRepositoryMock => ({
   create: jest.fn(),
   save: jest.fn(),
   findByUserId: jest.fn(),
@@ -13,20 +20,20 @@ const mockUserRepository = () => ({
 
 describe('UserService', () => {
   let userService: UserService;
-  let userRepository;
-  const mockedRepository = mockUserRepository();
+  let userRepository: UserRepositoryMock;
 
   beforeEach(async () => {
     const mockJwtService = {
       sign: jest.fn().mockReturnValue('mockAccessToken'),
     };
 
+    userRepository = createUserRepositoryMock();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
         {
           provide: UserRepository,
-          useValue: mockedRepository,
+          useValue: userRepository,
         },
         {
           provide: JwtService,
@@ -36,12 +43,11 @@ describe('UserService', () => {
     }).compile();
 
     userService = module.get<UserService>(UserService);
-    userRepository = mockedRepository;
   });
 
   // register test코드
   it('register() should create and save a user', async () => {
-    const dto: UserDTO.RegisterRequest = {
+    const dto: RegisterRequest = {
       userId: 'testuser',
       password: '1234',
       name: '홍길동',
@@ -53,9 +59,9 @@ describe('UserService', () => {
 
     const savedUser = { id: 1, ...dto };
 
-    userRepository.findByUserId!.mockResolvedValue(null);
-    userRepository.create!.mockReturnValue(savedUser);
-    userRepository.save!.mockResolvedValue(savedUser);
+    userRepository.findByUserId.mockResolvedValue(null);
+    userRepository.create.mockReturnValue(savedUser);
+    userRepository.save.mockResolvedValue(savedUser);
 
     const result = await userService.register(dto);
 
