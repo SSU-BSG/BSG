@@ -7,16 +7,17 @@ import { UserEntity } from './user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './auth/passport.jwt';
 import { PassportModule } from '@nestjs/passport';
+import { UserRepository } from './user.repository';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
     ConfigModule.forRoot({
       envFilePath: '.env.jwt',
-      isGlobal: true, 
+      isGlobal: true,
     }),
     JwtModule.registerAsync({
-      imports: [ConfigModule,],
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
@@ -25,11 +26,10 @@ import { PassportModule } from '@nestjs/passport';
         },
       }),
     }),
-    PassportModule
+    PassportModule,
   ],
-  exports:[UserService],
+  exports: [UserService, UserRepository],
   controllers: [UserController],
-  providers: [UserService, JwtStrategy],
+  providers: [UserService, JwtStrategy, UserRepository],
 })
-
 export class UserModule {}
