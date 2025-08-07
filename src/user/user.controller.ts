@@ -1,22 +1,22 @@
 import {
   Body,
   Controller,
-  Post,
-  UseGuards,
   Get,
-  Req,
   Patch,
+  Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
+import { AuthGuard } from './auth/auth.guard';
 import {
-  RegisterRequest,
-  LoginResponse,
-  LoginRequest,
   EditProfileRequest,
+  LoginRequest,
+  LoginResponse,
   ProfileResponse,
+  RegisterRequest,
 } from './dto/user.dto';
 import { UserService } from './user.service';
-import { AuthGuard } from './auth/auth.guard';
-import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 
 @Controller('user')
 export class UserController {
