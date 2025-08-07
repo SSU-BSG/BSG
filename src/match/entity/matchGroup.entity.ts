@@ -1,22 +1,22 @@
-import { UserEntity } from 'src/user/user.entity';
 import {
   BaseEntity,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { MatchGroupMember } from './matchGroupMember.entity';
 
-@Entity('matchGroup')
+@Entity('match_group')
 export class MatchGroup extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UserEntity)
-  @JoinTable()
-  user: UserEntity[];
+  @OneToMany(() => MatchGroupMember, (member) => member.group, {
+    cascade: true,
+  })
+  members: MatchGroupMember[];
 
   @CreateDateColumn()
-  created: Date;
+  createdAt: Date;
 }
