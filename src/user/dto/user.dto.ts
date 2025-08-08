@@ -1,4 +1,4 @@
-import { IsString, Length, IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Length } from 'class-validator';
 
 export class RegisterRequest {
   @IsString()
@@ -22,6 +22,11 @@ export class RegisterRequest {
 
   @IsString()
   gender: string;
+}
+
+export class RegisterResponse {
+  @IsString()
+  message: string;
 }
 
 export class LoginRequest {
@@ -55,6 +60,11 @@ export class EditProfileRequest {
   gender?: string;
 }
 
+export class EditProfileResponse {
+  @IsString()
+  message: string;
+}
+
 export class LoginResponse {
   @IsString()
   message: string;
@@ -63,7 +73,7 @@ export class LoginResponse {
   accessToken: string;
 }
 
-export class ProfileResponse {
+export class GetProfileResponse {
   @IsString()
   userId: string;
 
