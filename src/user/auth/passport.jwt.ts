@@ -1,9 +1,10 @@
-import { UserRepository } from './../user.repository';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserService } from '../user.service';
+import { UserNotFoundException } from 'src/excepttion/custom.exception';
 import { UserEntity } from '../user.entity';
+import { UserService } from '../user.service';
+import { UserRepository } from './../user.repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const { userId } = payload;
     const user = await this.userRepository.findByUserId(userId);
     if (!user) {
-      throw new UnauthorizedException({ message: '존재하지 않는 회원입니다.' });
+      throw new UserNotFoundException('존재하지 않는 회원입니다.');
     }
 
     return user;
