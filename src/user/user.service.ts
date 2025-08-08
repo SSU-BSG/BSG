@@ -1,19 +1,20 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import {
-  RegisterRequest,
-  LoginRequest,
+  InvalidPasswordException,
+  InvalidUserIdException,
+  UserIdConflictException,
+  UserNotFoundException,
+} from 'src/excepttion/custom.exception';
+import {
   EditProfileRequest,
+  LoginRequest,
   LoginResponse,
   ProfileResponse,
+  RegisterRequest,
 } from './dto/user.dto';
 import { UserRepository } from './user.repository';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -27,7 +28,7 @@ export class UserService {
     const hasUserId = await this.userRepository.findByUserId(userId);
 
     if (hasUserId) {
-      throw new ConflictException('이미 사용중인 ID입니다.');
+      throw new UserIdConflictException('이미 사용중인 ID입니다.');
     }
 
     const userEntity = this.userRepository.create(userDTO);
@@ -41,7 +42,7 @@ export class UserService {
     const user = await this.userRepository.findByUserId(userId);
 
     if (!user) {
-      throw new UnauthorizedException('아이디를 확인해주세요.');
+      throw new InvalidUserIdException('아이디를 확인해주세요.');
     }
 
     const isMatch: boolean = bcrypt.compareSync(
@@ -50,7 +51,7 @@ export class UserService {
     );
 
     if (!isMatch) {
-      throw new UnauthorizedException('비밀번호를 확인해주세요.');
+      throw new InvalidPasswordException('비밀번호를 확인해주세요.');
     }
     const payload = {
       id: user.id,
@@ -70,7 +71,7 @@ export class UserService {
     const user = await this.userRepository.findOneById(id);
 
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new UserNotFoundException('사용자를 찾을 수 없습니다.');
     }
 
     const result: ProfileResponse = {
@@ -89,7 +90,7 @@ export class UserService {
     const user = await this.userRepository.findOneById(id);
 
     if (!user) {
-      throw new UnauthorizedException('해당 유저에 대한 정보가 없습니다.');
+      throw new UserNotFoundException('해당 유저에 대한 정보가 없습니다.');
     }
 
     if (userDTO.name !== undefined) user.name = userDTO.name;
