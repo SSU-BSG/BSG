@@ -1,7 +1,7 @@
 import { ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserEntity } from 'src/user/user.entity';
+import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 import { LoginRequest, RegisterRequest } from '../../src/user/dto/user.dto';
 import { UserController } from '../../src/user/user.controller';
 import { UserService } from '../../src/user/user.service';
@@ -62,14 +62,10 @@ describe('userController', () => {
 
   // 회원가입 성공
   it('register_success', async () => {
-    userService.register.mockResolvedValue({
-      id: 1,
-      ...userDTO,
-    } as unknown as UserEntity);
+    userService.register.mockResolvedValue({ message: '회원가입 성공' });
 
     const result = await controller.register(userDTO);
-
-    expect(result).toBe('회원가입 성공');
+    expect(result).toEqual({ message: '회원가입 성공' });
     expect(userService.register).toHaveBeenCalledWith(userDTO);
   });
 
@@ -92,5 +88,53 @@ describe('userController', () => {
       accessToken: 'mockAccessToken',
     });
     expect(userService.login).toHaveBeenCalledWith(loginDTO);
+  });
+
+  // 프로필 조회 성공
+  it('getProfile_success', async () => {
+    const mockUserId = 1;
+    const mockReq = { user: { id: mockUserId } } as AuthenticatedRequest;
+
+    const profileResponse = {
+      id: mockUserId,
+      userId: 'testuser',
+      name: '홍길동',
+      age: 22,
+      studentYear: 3,
+      major: '컴퓨터공학',
+      gender: '남자',
+    };
+
+    userService.getProfile.mockResolvedValue(profileResponse);
+
+    const result = await controller.getProfile(mockReq);
+
+    expect(result).toEqual(profileResponse);
+    expect(userService.getProfile).toHaveBeenCalledWith(mockUserId);
+  });
+
+  // 프로필 수정 성공
+  it('editProfile_success', async () => {
+    const mockUserId = 1;
+    const mockReq = { user: { id: mockUserId } } as AuthenticatedRequest;
+
+    const editDTO = {
+      name: '홍길동2',
+      age: 23,
+      studentYear: 4,
+      major: '소프트웨어',
+      gender: '여자',
+    };
+
+    const expectedResponse = {
+      message: '프로필 수정 성공',
+    };
+
+    userService.editProfie.mockResolvedValue(expectedResponse);
+
+    const result = await controller.editProfile(mockReq, editDTO);
+
+    expect(result).toEqual(expectedResponse);
+    expect(userService.editProfie).toHaveBeenCalledWith(mockUserId, editDTO);
   });
 });
