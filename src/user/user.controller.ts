@@ -1,58 +1,65 @@
 import {
   Body,
   Controller,
-  Post,
-  UseGuards,
   Get,
-  Req,
   Patch,
+  Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
+import { AuthGuard } from './auth/auth.guard';
 import {
-  RegisterRequest,
-  LoginResponse,
-  LoginRequest,
   EditProfileRequest,
-  ProfileResponse,
+  EditProfileResponse,
+  GetProfileResponse,
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
 } from './dto/user.dto';
 import { UserService } from './user.service';
-import { AuthGuard } from './auth/auth.guard';
-import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 
-@Controller('user')
+@Controller('api')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('/register')
-  async register(@Body() userDTO: RegisterRequest) {
-    await this.userService.register(userDTO);
-    return '회원가입 성공';
+  @Post('/auth/sign-up')
+  async register(@Body() userDTO: RegisterRequest): Promise<RegisterResponse> {
+    const result: RegisterResponse = await this.userService.register(userDTO);
+    return result;
   }
 
-  @Post('/login')
-  async login(@Body() userDTO: LoginRequest) {
+  @Post('/auth/sign-in')
+  async login(@Body() userDTO: LoginRequest): Promise<LoginResponse> {
     const result: LoginResponse = await this.userService.login(userDTO);
 
     return result;
   }
 
   @UseGuards(AuthGuard)
-  @Get('/my-profile')
-  async getProfile(@Req() req: AuthenticatedRequest): Promise<ProfileResponse> {
+  @Get('/users/me')
+  async getProfile(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<GetProfileResponse> {
     const id = req.user.id;
-    const result: ProfileResponse = await this.userService.getProfile(id);
+    const result: GetProfileResponse = await this.userService.getProfile(id);
 
     return result;
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/me/edit-profile')
+  @Patch('/users/me')
   async editProfile(
     @Req() req: AuthenticatedRequest,
     @Body() UserDTO: EditProfileRequest,
-  ) {
+  ): Promise<EditProfileResponse> {
     const id = req.user.id;
-    await this.userService.editProfie(id, UserDTO);
+    const result: EditProfileResponse = await this.userService.editProfie(
+      id,
+      UserDTO,
+    );
 
-    return '회원정보 수정성공';
+    return result;
   }
 }

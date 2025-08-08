@@ -9,10 +9,12 @@ import {
 } from 'src/excepttion/custom.exception';
 import {
   EditProfileRequest,
+  EditProfileResponse,
+  GetProfileResponse,
   LoginRequest,
   LoginResponse,
-  ProfileResponse,
   RegisterRequest,
+  RegisterResponse,
 } from './dto/user.dto';
 import { UserRepository } from './user.repository';
 
@@ -23,7 +25,7 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(userDTO: RegisterRequest) {
+  async register(userDTO: RegisterRequest): Promise<RegisterResponse> {
     const userId: string = userDTO.userId;
     const hasUserId = await this.userRepository.findByUserId(userId);
 
@@ -32,11 +34,14 @@ export class UserService {
     }
 
     const userEntity = this.userRepository.create(userDTO);
-    console.log(userEntity);
-    return await this.userRepository.save(userEntity);
+    await this.userRepository.save(userEntity);
+    const result: RegisterResponse = {
+      message: '회원가입 성공',
+    };
+    return result;
   }
 
-  async login(userDTO: LoginRequest) {
+  async login(userDTO: LoginRequest): Promise<LoginResponse> {
     const userId: string = userDTO.userId;
 
     const user = await this.userRepository.findByUserId(userId);
@@ -67,14 +72,14 @@ export class UserService {
     return result;
   }
 
-  async getProfile(id: number) {
+  async getProfile(id: number): Promise<GetProfileResponse> {
     const user = await this.userRepository.findOneById(id);
 
     if (!user) {
       throw new UserNotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    const result: ProfileResponse = {
+    const result: GetProfileResponse = {
       userId: user.userId,
       name: user.name,
       age: user.age,
@@ -86,7 +91,10 @@ export class UserService {
     return result;
   }
 
-  async editProfie(id: number, userDTO: EditProfileRequest) {
+  async editProfie(
+    id: number,
+    userDTO: EditProfileRequest,
+  ): Promise<EditProfileResponse> {
     const user = await this.userRepository.findOneById(id);
 
     if (!user) {
@@ -99,7 +107,12 @@ export class UserService {
       user.studentYear = userDTO.studentYear;
     if (userDTO.major !== undefined) user.major = userDTO.major;
     if (userDTO.gender !== undefined) user.gender = userDTO.gender;
+    await this.userRepository.save(user);
 
-    return await this.userRepository.save(user);
+    const result: EditProfileResponse = {
+      message: '회원정보 수정성공',
+    };
+
+    return result;
   }
 }
