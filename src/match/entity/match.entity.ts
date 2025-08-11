@@ -8,6 +8,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+export enum MatchStatus {
+  WAITING = 'WAITING',
+  MATCHED = 'MATCHED',
+  CANCELED = 'CANCELED',
+}
+
 @Entity('match')
 export class Match extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -16,8 +22,8 @@ export class Match extends BaseEntity {
   @ManyToOne(() => UserEntity)
   user: UserEntity;
 
-  @Column({ default: true })
-  isWaiting: boolean;
+  @Column({ type: 'enum', enum: MatchStatus, default: MatchStatus.WAITING })
+  status: MatchStatus;
 
   @Column()
   wantedMatchCount: number;

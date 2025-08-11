@@ -8,4 +8,9 @@ export class MatchGroupRepository extends Repository<MatchGroup> {
   constructor(@InjectDataSource() dataSource: DataSource) {
     super(MatchGroup, dataSource.createEntityManager());
   }
+
+  async createGroup(): Promise<MatchGroup> {
+    const group = this.create({ createdAt: new Date() });
+    return this.save(group);
+  }
 }
