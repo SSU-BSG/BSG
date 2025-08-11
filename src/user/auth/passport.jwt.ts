@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserNotFoundException } from 'src/excepttion/custom.exception';
+import { UserNotFoundException } from 'src/exception';
 import { UserEntity } from '../user.entity';
 import { UserService } from '../user.service';
 import { UserRepository } from './../user.repository';

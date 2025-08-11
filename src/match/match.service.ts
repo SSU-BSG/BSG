@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-<<<<<<< HEAD
+import { UserNotFoundException } from 'src/exception';
 import { UserRepository } from './../user/user.repository';
+import { CreateMatchRequest } from './dto/match.dto';
 import { MatchRepository } from './repository/match.repository';
 import { MatchGroupRepository } from './repository/matchGroup.repository';
 import { MatchGroupMemberRepository } from './repository/matchGroupMember.repository';
@@ -15,31 +16,20 @@ export class MatchService {
   ) {}
 
   //createMatch
-  /*
-  @Entity('match')
-  export class Match extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
-  
-    @ManyToOne(() => UserEntity)
-    user: UserEntity;
-  
-    @Column({ default: true })
-    isWaiting: boolean;
-  
-    @Column()
-    wantedMatchCount: number;
-  
-    @CreateDateColumn()
-    created: Date;
-  }
-  */
-=======
+  async createMatch(userId: number, createMatchRequest: CreateMatchRequest) {
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) {
+      throw new UserNotFoundException('올바르지 않은 유저정보입니다.');
+    }
 
-@Injectable()
-export class MatchService {
-  //createMatch
->>>>>>> origin/feature/14
+    const match = this.matchRepository.create({
+      user,
+      wantedMatchCount: createMatchRequest.wantedMatchCount,
+      isWaiting: true,
+    });
+
+    await this.matchRepository.save(match);
+  }
   //cancelMatch
   //connectMatch
 }
