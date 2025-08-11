@@ -4,7 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Match } from '../entity/match.entity';
 
 @Injectable()
-export class UserRepository extends Repository<Match> {
+export class MatchRepository extends Repository<Match> {
   constructor(@InjectDataSource() dataSource: DataSource) {
     super(Match, dataSource.createEntityManager());
   }
