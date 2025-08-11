@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+<<<<<<< HEAD
 import { UserRepository } from './../user/user.repository';
 import { MatchRepository } from './repository/match.repository';
 import { MatchGroupRepository } from './repository/matchGroup.repository';
@@ -33,6 +34,12 @@ export class MatchService {
     created: Date;
   }
   */
+=======
+
+@Injectable()
+export class MatchService {
+  //createMatch
+>>>>>>> origin/feature/14
   //cancelMatch
   //connectMatch
 }
