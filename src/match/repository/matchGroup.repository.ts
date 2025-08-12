@@ -10,7 +10,6 @@ export class MatchGroupRepository extends Repository<MatchGroup> {
   }
 
   async createGroup(): Promise<MatchGroup> {
-    const group = this.create({ createdAt: new Date() });
-    return this.save(group);
+    return this.save(this.create({}));
   }
 }

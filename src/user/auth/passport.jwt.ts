@@ -21,8 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: Payload): Promise<UserEntity> {
-    const { userId } = payload;
-    const user = await this.userRepository.findByUserId(userId);
+    const { id } = payload;
+    const user = await this.userRepository.findOneById(id);
     if (!user) {
       throw new UserNotFoundException('존재하지 않는 회원입니다.');
     }
@@ -32,5 +32,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 }
 
 export interface Payload {
+  id: number;
   userId: string;
+  password: string;
+  name: string;
+  age: number;
+  studentYear: number;
+  major: string;
+  gender: string;
+  created_at: Date;
 }

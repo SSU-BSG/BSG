@@ -12,7 +12,7 @@ export class MatchGroupMemberRepository extends Repository<MatchGroupMember> {
   }
 
   async addMembers(group: MatchGroup, users: UserEntity[]): Promise<void> {
-    const members = users.map((user) => this.create({ group, user }));
-    await this.save(members);
+    const rows = users.map((u) => this.create({ group, user: u }));
+    await this.save(rows);
   }
 }

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MatchMoudle } from './match/match.moudle';
 import { UserEntity } from './user/user.entity';
 import { UserModule } from './user/user.module';
 
@@ -24,6 +26,8 @@ import { UserModule } from './user/user.module';
       autoLoadEntities: true,
     }),
     UserModule,
+    ScheduleModule.forRoot(),
+    MatchMoudle,
   ],
   controllers: [],
   providers: [],

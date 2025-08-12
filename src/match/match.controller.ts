@@ -1,4 +1,4 @@
-import { Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 import { AuthGuard } from 'src/user/auth/auth.guard';
 import { CreateMatchRequest } from './dto/match.dto';
@@ -11,7 +11,7 @@ export class MatchController {
   @Post('/match/create')
   async createMatch(
     @Req() req: AuthenticatedRequest,
-    createMatchRequest: CreateMatchRequest,
+    @Body() createMatchRequest: CreateMatchRequest,
   ): Promise<string> {
     const userId: number = req.user.id;
     const result = await this.matchService.createMatch(

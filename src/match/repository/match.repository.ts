@@ -9,30 +9,41 @@ export class MatchRepository extends Repository<Match> {
     super(Match, dataSource.createEntityManager());
   }
 
-  async findOneById(userPk: number): Promise<Match | null> {
-    return this.findOne({
-      where: {
-        user: { id: userPk },
-        status: MatchStatus.WAITING,
-      },
-      lock: { mode: 'pessimistic_write' },
-    });
+  async findWaitingByUserId(userId: number): Promise<Match | null> {
+    return this.createQueryBuilder('m')
+      .setLock('pessimistic_write')
+      .leftJoin('m.user', 'u')
+      .where('u.id = :uid', { uid: userId })
+      .andWhere('m.status = :st', { st: MatchStatus.WAITING })
+      .getOne();
   }
 
   async findOldestWaiting(count: number): Promise<Match[]> {
-    return this.find({
-      where: { status: MatchStatus.WAITING, wantedMatchCount: count },
-      order: { created: 'ASC' },
-      take: count,
-      lock: { mode: 'pessimistic_write' },
-      relations: ['user'],
-    });
+    return this.createQueryBuilder('m')
+      .setLock('pessimistic_write')
+      .leftJoinAndSelect('m.user', 'u')
+      .where('m.status = :st', { st: MatchStatus.WAITING })
+      .andWhere('m.wantedMatchCount = :cnt', { cnt: count })
+      .orderBy('m.created', 'ASC')
+      .take(count)
+      .getMany();
   }
 
-  async saveAsMatched(matches: Match[]): Promise<void> {
-    for (const match of matches) {
-      match.status = MatchStatus.MATCHED;
-      await this.save(match);
-    }
+  async markAsMatched(matchIds: number[]): Promise<void> {
+    await this.createQueryBuilder()
+      .update(Match)
+      .set({ status: MatchStatus.MATCHED })
+      .whereInIds(matchIds)
+      .execute();
+  }
+
+  async findDistinctWaitingCounts(): Promise<number[]> {
+    const rows = await this.createQueryBuilder('m')
+      .select('DISTINCT m.wantedMatchCount', 'wantedMatchCount')
+      .where('m.status = :st', { st: MatchStatus.WAITING })
+      .orderBy('wantedMatchCount', 'ASC')
+      .getRawMany<{ wantedMatchCount: number }>();
+
+    return rows.map((r) => r.wantedMatchCount);
   }
 }

@@ -3,6 +3,7 @@ import {
   CannotFoundMatchException,
   UserNotFoundException,
 } from 'src/exception';
+import { Transactional } from 'typeorm-transactional';
 import { UserRepository } from './../user/user.repository';
 import { CreateMatchRequest } from './dto/match.dto';
 import { MatchStatus } from './entity/match.entity';
@@ -35,8 +36,7 @@ export class MatchService {
     });
 
     await this.matchRepository.save(match);
-    const result: string = '매칭 등록 완료';
-    return result;
+    return '매칭 등록 완료';
   }
 
   async cancelMatch(id: number): Promise<string> {
@@ -45,7 +45,7 @@ export class MatchService {
       throw new UserNotFoundException('유저정보가 존재하지 않습니다.');
     }
 
-    const targetMatch = await this.matchRepository.findOneById(id);
+    const targetMatch = await this.matchRepository.findWaitingByUserId(id);
     if (!targetMatch) {
       throw new CannotFoundMatchException('현재 대기중인 매칭이 없습니다.');
     }
@@ -53,22 +53,28 @@ export class MatchService {
     targetMatch.status = MatchStatus.CANCELED;
     await this.matchRepository.save(targetMatch);
 
-    const result: string = '매칭 취소 완료';
-    return result;
+    return '매칭 취소 완료';
   }
 
-  async connectMatch(count: number) {
-    const waitingMatches = await this.matchRepository.findOldestWaiting(count);
-
-    if (waitingMatches.length < count) return;
+  @Transactional()
+  async connectMatch(count: number): Promise<void> {
+    const waiting = await this.matchRepository.findOldestWaiting(count);
+    if (waiting.length < count) return;
 
     const group = await this.matchGroupRepository.createGroup();
 
     await this.matchGroupMemberRepository.addMembers(
       group,
-      waitingMatches.map((w) => w.user),
+      waiting.map((w) => w.user),
     );
 
-    await this.matchRepository.saveAsMatched(waitingMatches);
+    await this.matchRepository.markAsMatched(waiting.map((w) => w.id));
+  }
+
+  async connectAllMatches(): Promise<void> {
+    const counts = await this.matchRepository.findDistinctWaitingCounts();
+    for (const k of counts) {
+      await this.connectMatch(k);
+    }
   }
 }
