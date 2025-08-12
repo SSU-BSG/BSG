@@ -6,7 +6,7 @@ import { MatchService } from './match.service';
 @Controller('/api')
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
-  //createMatch
+
   @UseGuards(AuthGuard)
   @Post('/match/create')
   async createMatch(
@@ -21,7 +21,7 @@ export class MatchController {
 
     return result;
   }
-  //cancelMatch
+
   @UseGuards(AuthGuard)
   @Delete('/match/cancel')
   async cancelMatch(@Req() req: AuthenticatedRequest): Promise<string> {
@@ -30,5 +30,4 @@ export class MatchController {
 
     return result;
   }
-  //connectMatch
 }
