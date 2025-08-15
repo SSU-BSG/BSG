@@ -26,6 +26,7 @@
             "@nestjs/jwt": "^11.0.0",
             "@nestjs/passport": "^11.0.5",
             "@nestjs/platform-express": "^11.0.1",
+            "@nestjs/schedule": "^6.0.0",
             "@nestjs/typeorm": "^11.0.0",
             "bcrypt": "^6.0.0",
             "class-transformer": "^0.5.1",
@@ -35,7 +36,8 @@
             "passport-jwt": "^4.0.1",
             "reflect-metadata": "^0.2.2",
             "rxjs": "^7.8.1",
-            "typeorm": "^0.3.25"
+            "typeorm": "^0.3.25",
+            "typeorm-transactional": "^0.5.0"
       },
       "devDependencies": {
             "@eslint/eslintrc": "^3.2.0",
@@ -52,7 +54,7 @@
             "@types/passport-jwt": "^4.0.1",
             "@types/supertest": "^6.0.2",
             "eslint": "^9.32.0",
-            "eslint-config-prettier": "^10.0.1",
+            "eslint-config-prettier": "^10.1.8",
             "eslint-plugin-jest": "^29.0.1",
             "eslint-plugin-prettier": "^5.2.2",
             "globals": "^16.0.0",

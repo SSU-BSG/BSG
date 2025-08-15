@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserNotFoundException } from 'src/excepttion/custom.exception';
+import { UserNotFoundException } from 'src/exception';
 import {
   EditProfileRequest,
   EditProfileResponse,

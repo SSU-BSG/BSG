@@ -23,3 +23,15 @@ export class UserIdConflictException extends HttpException {
     super(message, HttpStatus.CONFLICT);
   }
 }
+
+export class CannotFoundMatchException extends HttpException {
+  constructor(message: string) {
+    super(message, HttpStatus.NOT_FOUND);
+  }
+}
+
+export class MatchFailedException extends HttpException {
+  constructor(message: string) {
+    super(message, HttpStatus.CONFLICT);
+  }
+}
