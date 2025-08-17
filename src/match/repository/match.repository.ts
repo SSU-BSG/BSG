@@ -29,11 +29,29 @@ export class MatchRepository extends Repository<Match> {
       .getMany();
   }
 
+  async findAllWaiting(): Promise<Match[]> {
+    return this.createQueryBuilder('m')
+      .leftJoinAndSelect('m.user', 'u')
+      .where('m.status = :st', { st: MatchStatus.WAITING })
+      .getMany();
+  }
+
   async markAsMatched(matchIds: number[]): Promise<void> {
     await this.createQueryBuilder()
       .update(Match)
       .set({ status: MatchStatus.MATCHED })
       .whereInIds(matchIds)
+      .execute();
+  }
+
+  async markAsMatchedByUids(userIds: number[]): Promise<void> {
+    if (userIds.length === 0) return;
+
+    await this.createQueryBuilder()
+      .update(Match)
+      .set({ status: MatchStatus.MATCHED })
+      .where('userId IN (:...uids)', { uids: userIds })
+      .andWhere('status = :st', { st: MatchStatus.WAITING })
       .execute();
   }
 

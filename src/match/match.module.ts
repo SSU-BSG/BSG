@@ -27,4 +27,4 @@ import { MatchGroupMemberRepository } from './repository/matchGroupMember.reposi
     MatchScheduler,
   ],
 })
-export class MatchMoudle {}
+export class MatchModule {}

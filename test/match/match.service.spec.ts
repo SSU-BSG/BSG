@@ -12,39 +12,39 @@ import { MatchGroupMemberRepository } from '../../src/match/repository/matchGrou
 import { UserEntity } from '../../src/user/user.entity';
 import { UserRepository } from '../../src/user/user.repository';
 
-type Mocked<T> = jest.Mocked<T>;
 jest.mock('typeorm-transactional', () => ({
   Transactional: () => (_t: any, _k: string, d: PropertyDescriptor) => d,
   initializeTransactionalContext: jest.fn(),
   resetTransactionalContext: jest.fn(),
   addTransactionalDataSource: jest.fn(),
 }));
+
 describe('MatchService', () => {
   let service: MatchService;
-  let matchRepo: Mocked<MatchRepository>;
-  let groupRepo: Mocked<MatchGroupRepository>;
-  let memberRepo: Mocked<MatchGroupMemberRepository>;
-  let userRepo: Mocked<UserRepository>;
+  let matchRepo: jest.Mocked<MatchRepository>;
+  let groupRepo: jest.Mocked<MatchGroupRepository>;
+  let memberRepo: jest.Mocked<MatchGroupMemberRepository>;
+  let userRepo: jest.Mocked<UserRepository>;
 
-  const mockMatchRepo: Partial<Mocked<MatchRepository>> = {
+  const mockMatchRepo = {
     create: jest.fn(),
     save: jest.fn(),
     findWaitingByUserId: jest.fn(),
-    findOldestWaiting: jest.fn(),
-    markAsMatched: jest.fn(),
-    findDistinctWaitingCounts: jest.fn(),
+    findAllWaiting: jest.fn(),
+    markAsMatchedByUids: jest.fn(),
   };
 
-  const mockGroupRepo: Partial<Mocked<MatchGroupRepository>> = {
+  const mockGroupRepo = {
     createGroup: jest.fn(),
   };
 
-  const mockMemberRepo: Partial<Mocked<MatchGroupMemberRepository>> = {
+  const mockMemberRepo = {
     addMembers: jest.fn(),
   };
 
-  const mockUserRepo: Partial<Mocked<UserRepository>> = {
+  const mockUserRepo = {
     findOneById: jest.fn(),
+    findByIds: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -64,131 +64,106 @@ describe('MatchService', () => {
     memberRepo = module.get(MatchGroupMemberRepository);
     userRepo = module.get(UserRepository);
 
+    matchRepo.findAllWaiting.mockResolvedValue([]);
+    await service.onModuleInit();
+
     jest.clearAllMocks();
   });
 
   describe('createMatch', () => {
-    it('createMatch_success', async () => {
-      const user: Partial<UserEntity> = { id: 1 } as UserEntity;
-      const dto: CreateMatchRequest = { wantedMatchCount: 3 };
+    it('매칭 인원이 부족할 경우, 대기열에만 추가하고 성공적으로 등록되어야 한다', async () => {
+      const user = { id: 1 } as UserEntity;
+      const dto: CreateMatchRequest = { wantedMatchCount: 2 };
+      const createdMatch = { user, ...dto } as Match;
+      const connectMatchSpy = jest.spyOn(service, 'connectMatch');
 
-      userRepo.findOneById.mockResolvedValue(user as UserEntity);
+      userRepo.findOneById.mockResolvedValue(user);
+      matchRepo.create.mockReturnValue(createdMatch);
+      matchRepo.save.mockResolvedValue(createdMatch);
 
-      const created = {
-        id: 10,
-        user,
-        wantedMatchCount: dto.wantedMatchCount,
-        status: MatchStatus.WAITING,
-      } as Match;
+      const result = await service.createMatch(user.id, dto);
 
-      matchRepo.create.mockReturnValue(created);
-      matchRepo.save.mockResolvedValue(created);
-
-      const res = await service.createMatch(1, dto);
-
-      expect(res).toBe('매칭 등록 완료');
+      expect(result).toBe('매칭 등록 완료');
       expect(userRepo.findOneById).toHaveBeenCalledWith(1);
-      expect(matchRepo.create).toHaveBeenCalledWith({
-        user,
-        wantedMatchCount: 3,
-        status: MatchStatus.WAITING,
-      });
-      expect(matchRepo.save).toHaveBeenCalledWith(created);
+      expect(matchRepo.save).toHaveBeenCalledWith(createdMatch);
+      expect(connectMatchSpy).not.toHaveBeenCalled();
     });
 
-    it('creatMatch_failed', async () => {
-      userRepo.findOneById.mockResolvedValue(null);
+    it('매칭 인원이 충족될 경우, connectMatch를 호출해야 한다', async () => {
+      const user1 = { id: 1 } as UserEntity;
+      const user2 = { id: 2 } as UserEntity;
+      const dto: CreateMatchRequest = { wantedMatchCount: 2 };
+      const connectMatchSpy = jest
+        .spyOn(service, 'connectMatch')
+        .mockResolvedValue(undefined);
 
-      await expect(
-        service.createMatch(999, { wantedMatchCount: 2 }),
-      ).rejects.toThrow(UserNotFoundException);
-      expect(matchRepo.create).not.toHaveBeenCalled();
+      await service.createMatch(user1.id, dto);
+      await service.createMatch(user2.id, dto);
+
+      expect(connectMatchSpy).toHaveBeenCalledWith(2);
+    });
+
+    it('유저를 찾을 수 없으면 UserNotFoundException을 던져야 한다', async () => {
+      userRepo.findOneById.mockResolvedValue(null);
+      const dto: CreateMatchRequest = { wantedMatchCount: 2 };
+
+      await expect(service.createMatch(999, dto)).rejects.toThrow(
+        UserNotFoundException,
+      );
     });
   });
 
   describe('cancelMatch', () => {
-    it('cancelMatch_success', async () => {
-      const user: Partial<UserEntity> = { id: 1 } as UserEntity;
-      const waiting: Partial<Match> = {
+    it('매칭 취소에 성공해야 한다', async () => {
+      const targetMatch = {
         id: 20,
         status: MatchStatus.WAITING,
+        wantedMatchCount: 2,
+        user: { id: 1 } as UserEntity,
       } as Match;
 
-      userRepo.findOneById.mockResolvedValue(user as UserEntity);
-      matchRepo.findWaitingByUserId.mockResolvedValue(waiting as Match);
-      matchRepo.save.mockResolvedValue({
-        ...waiting,
-        status: MatchStatus.CANCELED,
-      } as Match);
+      matchRepo.findWaitingByUserId.mockResolvedValue(targetMatch);
+      matchRepo.save.mockImplementation(async (match) => match as Match);
 
-      const res = await service.cancelMatch(1);
+      const result = await service.cancelMatch(1);
 
-      expect(res).toBe('매칭 취소 완료');
+      expect(result).toBe('매칭 취소 완료');
       expect(matchRepo.findWaitingByUserId).toHaveBeenCalledWith(1);
-      expect(matchRepo.save).toHaveBeenCalledWith({
-        ...waiting,
-        status: MatchStatus.CANCELED,
-      });
+      expect(matchRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: MatchStatus.CANCELED,
+        }),
+      );
     });
 
-    it('cancelMatch_failed', async () => {
-      userRepo.findOneById.mockResolvedValue({ id: 1 } as UserEntity);
+    it('대기중인 매칭이 없으면 CannotFoundMatchException을 던져야 한다', async () => {
       matchRepo.findWaitingByUserId.mockResolvedValue(null);
 
       await expect(service.cancelMatch(1)).rejects.toThrow(
         CannotFoundMatchException,
       );
-      expect(matchRepo.save).not.toHaveBeenCalled();
     });
   });
 
   describe('connectMatch', () => {
-    it('connectMatch_success_nothing_to_connect', async () => {
-      matchRepo.findOldestWaiting.mockResolvedValue([{ id: 1 } as Match]); // length 1
-      await service.connectMatch(2);
-
-      expect(groupRepo.createGroup).not.toHaveBeenCalled();
-      expect(memberRepo.addMembers).not.toHaveBeenCalled();
-      expect(matchRepo.markAsMatched).not.toHaveBeenCalled();
-    });
-
-    it('connectMatch_success_connecting_group', async () => {
+    it('성공적으로 매칭 그룹을 생성해야 한다', async () => {
       const userA = { id: 100 } as UserEntity;
       const userB = { id: 200 } as UserEntity;
-      const m1 = { id: 11, user: userA } as Match;
-      const m2 = { id: 22, user: userB } as Match;
+      const userIds = [userA.id, userB.id];
+      const group = { id: 99 } as any;
 
-      matchRepo.findOldestWaiting.mockResolvedValue([m1, m2]);
-      groupRepo.createGroup.mockResolvedValue({ id: 99 } as any);
-      memberRepo.addMembers.mockResolvedValue();
+      const queue = service['waitingQueues'].set(2, [...userIds]);
 
-      matchRepo.markAsMatched.mockResolvedValue();
+      userRepo.findByIds.mockResolvedValue([userA, userB]);
+      groupRepo.createGroup.mockResolvedValue(group);
 
       await service.connectMatch(2);
 
+      expect(userRepo.findByIds).toHaveBeenCalledWith(userIds);
       expect(groupRepo.createGroup).toHaveBeenCalled();
-      expect(memberRepo.addMembers).toHaveBeenCalledWith({ id: 99 }, [
-        userA,
-        userB,
-      ]);
-      expect(matchRepo.markAsMatched).toHaveBeenCalledWith([11, 22]);
-    });
-  });
-
-  describe('connectAllMatches', () => {
-    it('connectAllMatches_success', async () => {
-      const spy = jest
-        .spyOn(service, 'connectMatch')
-        .mockResolvedValue(undefined);
-
-      matchRepo.findDistinctWaitingCounts.mockResolvedValue([2, 3, 4]);
-
-      await service.connectAllMatches();
-
-      expect(spy).toHaveBeenCalledTimes(3);
-      expect(spy).toHaveBeenNthCalledWith(1, 2);
-      expect(spy).toHaveBeenNthCalledWith(2, 3);
-      expect(spy).toHaveBeenNthCalledWith(3, 4);
+      expect(memberRepo.addMembers).toHaveBeenCalledWith(group, [userA, userB]);
+      expect(matchRepo.markAsMatchedByUids).toHaveBeenCalledWith(userIds);
+      expect(queue.get(2)).toEqual([]);
     });
   });
 });

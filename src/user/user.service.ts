@@ -6,7 +6,7 @@ import {
   InvalidUserIdException,
   UserIdConflictException,
   UserNotFoundException,
-} from 'src/exception';
+} from '../exception';
 import {
   EditProfileRequest,
   EditProfileResponse,
