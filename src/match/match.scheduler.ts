@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { MatchFailedException } from 'src/exception';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { MatchService } from './match.service';
 
 @Injectable()
@@ -9,12 +8,14 @@ export class MatchScheduler {
 
   constructor(private readonly matchService: MatchService) {}
 
-  @Cron('*/10 * * * * *')
-  async connectMatch() {
+  @Cron(CronExpression.EVERY_MINUTE)
+  async logWaitingQueueStatus() {
+    this.logger.log('현재 매칭 대기열 상태를 확인합니다...');
     try {
-      await this.matchService.connectAllMatches();
-    } catch {
-      throw new MatchFailedException('매칭 처리중 오류가 발생했습니다.');
+      const queueStatus = this.matchService.getWaitingQueueStatus();
+      this.logger.log(`현재 대기열: ${JSON.stringify(queueStatus)}`);
+    } catch (error) {
+      this.logger.error('대기열 상태 확인 중 오류 발생', error.stack);
     }
   }
 }

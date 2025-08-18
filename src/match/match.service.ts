@@ -34,10 +34,10 @@ export class MatchService implements OnModuleInit {
   }
 
   async createMatch(
-    id: number,
+    userId: number,
     createMatchRequest: CreateMatchRequest,
   ): Promise<string> {
-    const user = await this.userRepository.findOneById(id);
+    const user = await this.userRepository.findOneById(userId);
     if (!user) {
       throw new UserNotFoundException('유저정보가 존재하지 않습니다.');
     }
@@ -51,7 +51,7 @@ export class MatchService implements OnModuleInit {
 
     const count = createMatchRequest.wantedMatchCount;
     const queue = this.waitingQueues.get(count) || [];
-    queue.push(id);
+    queue.push(userId);
     this.waitingQueues.set(count, queue);
 
     if (queue.length >= count) {
@@ -61,8 +61,8 @@ export class MatchService implements OnModuleInit {
     return '매칭 등록 완료';
   }
 
-  async cancelMatch(id: number): Promise<string> {
-    const targetMatch = await this.matchRepository.findWaitingByUserId(id);
+  async cancelMatch(userId: number): Promise<string> {
+    const targetMatch = await this.matchRepository.findWaitingByUserId(userId);
     if (!targetMatch) {
       throw new CannotFoundMatchException('현재 대기중인 매칭이 없습니다.');
     }
@@ -71,7 +71,7 @@ export class MatchService implements OnModuleInit {
 
     const count = targetMatch.wantedMatchCount;
     const queue = this.waitingQueues.get(count) || [];
-    const updatedQueue = queue.filter((userId) => userId !== id);
+    const updatedQueue = queue.filter((id) => id !== userId);
     this.waitingQueues.set(count, updatedQueue);
 
     return '매칭 취소 완료';
@@ -82,20 +82,22 @@ export class MatchService implements OnModuleInit {
     const queue = this.waitingQueues.get(count);
     if (!queue || queue.length < count) return;
 
-    const waitingUserIds = queue.splice(0, count);
+    const matchedUserIds = queue.splice(0, count);
     this.waitingQueues.set(count, queue);
 
-    const waiting = await this.userRepository.findByIds(waitingUserIds);
-    if (waiting.length < count) return;
+    const matchedUsers = await this.userRepository.findByIds(matchedUserIds);
+    if (matchedUsers.length < count) return;
 
     const group = await this.matchGroupRepository.createGroup();
-
-    await this.matchGroupMemberRepository.addMembers(
-      group,
-      waiting.map((w) => w),
-    );
-
-    await this.matchRepository.markAsMatchedByUids(waiting.map((w) => w.id));
+    await this.matchGroupMemberRepository.addMembers(group, matchedUsers);
+    await this.matchRepository.markAsMatchedByUids(matchedUserIds);
   }
 
+  getWaitingQueueStatus(): Record<number, number> {
+    const status = {};
+    for (const [count, queue] of this.waitingQueues.entries()) {
+      status[count] = queue.length;
+    }
+    return status;
+  }
 }
