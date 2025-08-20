@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { MatchModule } from './match/match.module';
-import { UserEntity } from './user/user.entity';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -22,14 +23,14 @@ import { UserModule } from './user/user.module';
       database: process.env.DB_DATABASE,
       synchronize: true,
       logging: true,
-      entities: [UserEntity],
+      //entities: [UserEntity],
       autoLoadEntities: true,
     }),
     UserModule,
     ScheduleModule.forRoot(),
     MatchModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

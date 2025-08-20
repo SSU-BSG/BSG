@@ -18,4 +18,4 @@ export class MatchScheduler {
       this.logger.error('대기열 상태 확인 중 오류 발생', error.stack);
     }
   }
-}
+}                         

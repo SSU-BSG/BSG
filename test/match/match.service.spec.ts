@@ -20,7 +20,7 @@ jest.mock('typeorm-transactional', () => ({
 }));
 
 describe('MatchService', () => {
-  let service: MatchService;
+  let service: MatchService;''
   let matchRepo: jest.Mocked<MatchRepository>;
   let groupRepo: jest.Mocked<MatchGroupRepository>;
   let memberRepo: jest.Mocked<MatchGroupMemberRepository>;
