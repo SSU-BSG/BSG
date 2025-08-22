@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChatModule } from './chat/chat.module';
 import { MatchMoudle } from './match/match.moudle';
 import { UserEntity } from './user/user.entity';
 import { UserModule } from './user/user.module';
@@ -11,7 +12,7 @@ import { UserModule } from './user/user.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env.dev',
-      ignoreEnvFile: process.env.NODE_ENV === 'prod',
+      ignoreEnvFile: !!(process.env.NODE_ENV === 'prod'),
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -28,6 +29,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     ScheduleModule.forRoot(),
     MatchMoudle,
+    ChatModule,
   ],
   controllers: [],
   providers: [],
